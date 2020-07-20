@@ -1,6 +1,7 @@
 package main
 
 import (
+	"container/list"
 	"flag"
 	"fmt"
 	"io"
@@ -67,13 +68,47 @@ func buildLinks(body io.Reader, base string) []string {
 	return hrefs
 }
 
+func bfs(urlFlag string, height int) []string {
+
+	visited := make(map[string]bool)
+
+	q := list.New()
+	nq := list.New()
+	nq.PushBack(urlFlag)
+
+	for i := 0; i <= height; i++ {
+		q, nq = nq, list.New()
+
+		for temp := q.Front(); temp != nil; temp = temp.Next() {
+			if visited[string(temp.Value.(string))] == true {
+				continue
+			}
+
+			visited[temp.Value.(string)] = true
+			for _, x := range GET(temp.Value.(string)) {
+				nq.PushBack(x)
+			}
+
+		}
+
+	}
+
+	var vis []string
+	for x, _ := range visited {
+		vis = append(vis, x)
+	}
+
+	return vis
+}
+
 func main() {
 
 	urlFlag := flag.String("url", "http://gophercises.com", "your choice of URL")
+	height := flag.Int("height", 2, "depth to which tree is traversed")
 	flag.Parse()
 	//do not name var url - leads to clash with net/url
 
-	pages := GET(*urlFlag)
+	pages := bfs(*urlFlag, *height)
 
 	for _, x := range pages {
 		fmt.Println(x)
